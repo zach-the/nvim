@@ -1,12 +1,12 @@
 -- ------------------------------------------------------ --
 -- ╔════════════════════════════════════════════════════╗ --
--- ║ ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ║ -- 
--- ║ ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ║ -- 
--- ║ ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ║ -- 
--- ║ ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ║ -- 
--- ║ ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ║ -- 
--- ║ ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ║ -- 
--- ╚════════════════════════════════════════════════════╝ -- 
+-- ║ ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ║ --
+-- ║ ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ║ --
+-- ║ ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ║ --
+-- ║ ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ║ --
+-- ║ ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ║ --
+-- ║ ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ║ --
+-- ╚════════════════════════════════════════════════════╝ --
 -- ------------------------------------------------------ --
 
 -- Bootstrap lazy.nvim -------------------------------------------------------
@@ -58,6 +58,44 @@ vim.keymap.set({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", 
 vim.keymap.set({ "n", "x" }, "<Down>", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
 vim.keymap.set({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 vim.keymap.set({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
+
+-- Create or get an augroup for macro recording highlights
+local macro_group = vim.api.nvim_create_augroup("MacroRecordingHighlight", { clear = true })
+
+-- Variable to store the original CursorLine highlight
+local cursorline = nil
+
+-- Highlight change when recording starts
+vim.api.nvim_create_autocmd("RecordingEnter", {
+  group = macro_group,
+  callback = function()
+    local ok, catppuccin = pcall(require, "catppuccin.palettes")
+    if not ok then
+      vim.notify("catppuccin not found!", vim.log.levels.WARN)
+      return
+    end
+
+    local palette = catppuccin.get_palette("mocha")
+
+    -- Save current CursorLine highlight
+    cursorline = vim.api.nvim_get_hl(0, { name = "CursorLine" })
+
+    -- Set temporary highlight for recording mode
+    vim.api.nvim_set_hl(0, "CursorLine", { bg = palette.maroon, fg = palette.crust })
+  end,
+})
+
+-- Restore highlight when recording stops
+vim.api.nvim_create_autocmd("RecordingLeave", {
+  group = macro_group,
+  callback = function()
+    if cursorline then
+      vim.api.nvim_set_hl(0, "CursorLine", cursorline)
+      cursorline = nil
+    end
+  end,
+})
+
 
 -- Setup lazy.nvim -----------------------------------------------------------
 require("lazy").setup({
