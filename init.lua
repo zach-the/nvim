@@ -52,6 +52,7 @@ vim.o.smartcase = true
 vim.o.ignorecase = true
 vim.o.hlsearch = true
 vim.o.scrolloff = 5
+vim.o.clipboard = "unnamedplus"
 
 -- Better up/down ------------------------------------------------------------
 vim.keymap.set({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
